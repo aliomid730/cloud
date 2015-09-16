@@ -1,0 +1,53 @@
+---
+ - hosts: cloud
+   tasks:
+   - name: Install CloudStack Management server, Mysql and NFS server
+     apt: name={{ item }} update_cache=yes state=latest
+     with_items:
+       - python-pycurl
+   - name: Set Root Password
+     command: echo MYSQL_ROOT_PASSWORD=Paccw0rd > /etc/environment && source /etc/environment
+   - name: Add CloudStack Repository Key
+     apt_key: url=http://cloudstack.apt-get.eu/release.asc state=present
+   - name: Add Repository to the systems
+     apt_repository: repo="deb http://cloudstack.apt-get.eu/ubuntu trusty 4.5" state=present
+   - name: Install CloudStack Management server, Mysql and NFS server
+     apt: name={{ item }} update_cache=yes state=latest
+     with_items:
+       - python-mysqldb
+       - cloudstack-management
+       - mysql-server
+       - nfs-kernel-server
+   - name: Create Mysql Configuration
+     lineinfile: dest=/etc/mysql/conf.d/cloudstack.cnf insertafter=EOF create=true state=present line={{ item.line  }}
+     with_items:
+       - { line: [mysqld] }
+       - { line: "innodb_rollback_on_timeout=1" }
+       - { line: "innodb_lock_wait_timeout=600" }
+       - { line: "max_connections=350" }
+       - { line: "log-bin=mysql-bin" }
+       - { line: "binlog-format='ROW'" }
+   - name: Change Root Password
+     mysql_user: name=root password=Paccw0rd priv=*.*:ALL state=present
+   - name: Restart Mysql
+     service: name=mysql state=restarted
+   - name: Create Parent NFS Directory To Be Exported
+     file: path=/export state=directory
+   - name: Create NFS Directory To Be Exported
+     file: path=/export/secondary state=directory
+   - name: Create NFS Share
+     lineinfile: dest=/etc/exports insertafter=EOF line="/export/secondary *(rw,async,no_root_squash,no_subtree_check)"
+   - name: Restart NFS Server
+     service: name=nfs-kernel-server state=restarted
+   - name: Export All the NFS Shares
+     command: /usr/sbin/exportfs -a
+   - name: Create CloudStack Database
+     command: cloudstack-setup-databases cloud:cloud@localhost --deploy-as=root:Paccw0rd
+   - name: Download vhd-util
+     command: /usr/bin/wget http://download.cloud.com.s3.amazonaws.com/tools/vhd-util -O /usr/share/cloudstack-common/scripts/vm/hypervisor/xenserver/vhd-util
+   - name: Change vhd-util Permissions
+     command: /bin/chmod 777 /usr/share/cloudstack-common/scripts/vm/hypervisor/xenserver/vhd-util
+   - name: Download CloudStack SystemVMs
+     command: /usr/share/cloudstack-common/scripts/storage/secondary/cloud-install-sys-tmplt -m /export/secondary -u http://cloudstack.apt-get.eu/systemvm/4.5/systemvm64template-4.5-xen.vhd.bz2 -h xenserver -F
+   - name: Start CloudStack Management Server
+     command: cloudstack-setup-management
