@@ -50,14 +50,23 @@ netstat -anp |grep 'tcp\|udp' | awk '{print $5}' | cut -d: -f1 | sort | uniq -c 
 au
 
 [http-get-dos]
+
 enabled = true
+
 port = http,https
+
 filter = http-get-dos
+
 logpath = /var/log/apache2/access.log
+
 maxretry = 300
+
 findtime = 300
+
 #ban for 5 minutes
+
 bantime = 600
+
 action = iptables[name=HTTP, port=http, protocol=tcp]
 
 
