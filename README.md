@@ -127,3 +127,24 @@ must be used under service
 ==========================
 #HeadRequire "Host:.*myotherdomain.com.*"
 #URL "/(images|js|css)/"
+
+
+
+
+	<Proxy balancer://clusterABCD>
+
+		BalancerMember http://serverA
+
+		BalancerMember http://serverB
+
+		BalancerMember http://serverC
+
+		BalancerMember http://serverD
+
+		Order allow,deny
+
+		Allow from all
+
+	</Proxy>
+
+	ProxyPass / balancer://clusterABCD/
