@@ -16,17 +16,28 @@ timeout http-request 5s
 Pound HTTP(S) Load Balancer config
 ==================================
 ListenHTTPS
-	Address 1.2.3.4
+Address 1.2.3.4
+
 	Port	443
+
 	Cert    "/etc/pound/PATHTOCERT.pem"
+
 	## allow PUT and DELETE also (by default only GET, POST and HEAD)?:
+
 	xHTTP		2
+
 	Service
+
 		BackEnd
+
 			Address	127.0.0.1
+
 			Port	81
+
 		End
+
 	End
+
 End
 
 
@@ -72,19 +83,34 @@ ignoreregex =
 
 
 ListenHTTPS
+
      Address 192.168.1.5
+
      Port    443
+
      Cert    "/etc/apache2/ssl/mycertificate.pem"
+
      Service
+
            BackEnd
+
                   Address 192.168.1.80
+
                   Port 80
+
            End
+
            BackEnd
+
+
                   Address 192.168.1.81
+
                   Port 80
+
            End
+
      End
+
 End
 
 
