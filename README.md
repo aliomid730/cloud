@@ -47,7 +47,7 @@ Number of active connections
 Shows logged in IPs
 netstat -anp |grep 'tcp\|udp' | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort –n
 
-
+au
 
 [http-get-dos]
 enabled = true
@@ -64,7 +64,7 @@ action = iptables[name=HTTP, port=http, protocol=tcp]
 
 # Fail2Ban configuration file
 #
-# Author: http://www.go2linux.org
+# Author: Sayyed Ali Agha Hashimi
 #
 [Definition]
 
