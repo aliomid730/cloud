@@ -168,3 +168,4 @@ backend back
 
 		server srv2 ip:80 check
 		
+RequestReadTimeout header=20-40,MinRate=500 body=20,MinRate=500
