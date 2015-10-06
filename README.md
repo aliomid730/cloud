@@ -148,3 +148,23 @@ must be used under service
 	</Proxy>
 
 	ProxyPass / balancer://clusterABCD/
+
+
+
+frontend site
+
+	bind *:80
+
+	default_backend back
+
+
+backend back
+
+		balance roundrobin
+
+		mode http
+
+		server srv1 ip:80 check
+
+		server srv2 ip:80 check
+		
