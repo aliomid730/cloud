@@ -1,0 +1,50 @@
+CloudStack Installation
+=======================
+1. Disable apparmor.
+	a. service apparmor teardown
+	b. update-rc.d apparmor disable
+2. Assign IP addresses to the available interface.
+	###############################################
+	auto eth0
+	iface eth0 inet static
+	address 192.168.57.11
+	netmask 255.255.255.0
+	gateway 192.168.57.254
+	dns-nameservers 192.168.57.254
+	dns-search cloud.local
+	#################################################
+3. Reboot the server to bring the changes into effect.
+	a. reboot
+4. Add cloudstack repository.	
+	a. wget -O - http://cloudstack.apt-get.eu/release.asc|apt-key add -
+	b. echo "deb http://cloudstack.apt-get.eu/ubuntu trusty 4.5" > /etc/apt/source.list.d/cloudstack.list 
+	c. apt-get update
+	d. apt-get --yes install cloudstack-management
+	e. apt-get --yes install mysql-server nfs-kernel-server
+5. Create the following mysql configuration.	
+	a. nano /etc/mysql/conf.d/cloudstack.cnf
+	########################################
+	[mysqld]
+	innodb_rollback_on_timeout=1
+	innodb_lock_wait_timeout=600
+	max_connections=350
+	log-bin=mysql-bin
+	binlog-format = 'ROW'
+	#########################################
+6. Restart mysql service.
+	a. service mysql restart
+7. Edit '/etc/exports' and create an NFS share.
+	a. nano /etc/exports
+		1. /export/secondary *(rw,async,no_root_squash,no_subtree_check)
+	b. service nfs-kernel-server restart	
+	c. exportfs -a
+8. Run the following command to create cloudstack databases.
+	a. cloudstack-setup-databases cloud:cloud@localhost --deploy-as=root:Paccw0rd
+9. Download and copy vhd-util to '/usr/share/cloudstack-common/scripts/vm/hypervisor/xenserver/'.
+	a. wget http://download.cloud.com.s3.amazonaws.com/tools/vhd-util
+	b. cp vhd-util /usr/share/cloudstack-common/scripts/vm/hypervisor/xenserver/vhd-util
+	c. chmod 777 /usr/share/cloudstack-common/scripts/vm/hypervisor/xenserver/vhd-util
+10. Download xen systemvms using the following command.
+	a. /usr/share/cloudstack-common/scripts/storage/secondary/cloud-install-sys-tmplt -m /export/secondary -u http://cloudstack.apt-get.eu/systemvm/4.5/systemvm64template-4.5-xen.vhd.bz2 -h xenserver -F
+11. Start management server. 
+	a. cloudstack-setup-management
